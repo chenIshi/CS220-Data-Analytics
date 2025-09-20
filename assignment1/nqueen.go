@@ -2,12 +2,24 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 )
 
 var count int
 
 func main() {
-	n := 8
+	if len(os.Args) > 2 {
+		fmt.Println("Usage: ./nqueen <board size>")
+		return
+	}
+
+	n, err := strconv.Atoi(os.Args[1])
+	if err != nil || n <= 0 {
+		fmt.Println("Please provide a positive integer for board size.")
+		return
+	}
+
 	solveNQueens(n)
 	fmt.Printf("Total solutions for %d-Queens: %d\n", n, count)
 }
