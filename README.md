@@ -28,7 +28,7 @@ The code is organized by assignment to make it easy to navigate. Each assignment
 3.  **Run the solution:**
     ```bash
     go build nqueen.go
-    go run nqueen.go
+    ./nqueen <board size>
     ```
 
 ## Contributing
