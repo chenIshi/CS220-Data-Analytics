@@ -16,6 +16,7 @@ This folder contains:
 - `cmd/correlation/`: CLI that computes Pearson correlations between X columns and Y.
 - `cmd/missing/`: CLI that analyzes missing values (-1) in CSV files.
 - `cmd/knn/`: CLI that performs k-NN classification with preprocessing and cross-validation.
+- `cmd/plot_knn/`: CLI that generates error vs k visualization for k-NN analysis.
 - `go.mod`: Go module for running code in this folder.
 
 ## Quick Start
@@ -49,6 +50,9 @@ go run ./cmd/knn -k 5
 
 # Combine flags (single-K with cosine)
 go run ./cmd/knn -k 5 -metric cosine
+
+# 7. Generate error vs k plot (Euclidean distance)
+go run ./cmd/plot_knn
 ```
 
 If successful, you’ll see a summary like:
@@ -83,6 +87,7 @@ Values are written as plain numeric strings. The parser preserves the data as-is
 | `cmd/missing` | Analyze missing values (-1) in CSV | 37/360 cells (10.28%), 31/60 rows (51.67%) |
 | `cmd/correlation` | Pearson correlations between X columns and Y | GPA: 0.6339, PreTest: 0.4246 |
 | `cmd/knn` | k-NN classification with preprocessing | Sweep k∈{2,4,6,8,10,12,14} over 5 runs by default; or single-K via `-k N`. Distance selectable via `-metric euclidean|cosine`. |
+| `cmd/plot_knn` | Generate error vs k visualization | Creates `knn_error_vs_k.png` showing training and test error curves for bias-variance analysis |
 
 ## Data Analysis Pipeline
 
@@ -91,10 +96,12 @@ Values are written as plain numeric strings. The parser preserves the data as-is
 3. **Explore**: Compute statistics (`cmd/summary`, `cmd/missing`)
 4. **Correlate**: Find feature-outcome relationships (`cmd/correlation`)
 5. **Predict**: Train k-NN classifier with preprocessing (`cmd/knn`)
+6. **Visualize**: Generate error vs k plots for model selection (`cmd/plot_knn`)
 
 ## k-NN Classification
 
 The k-NN implementation uses:
+- **Dataset**: N=60 samples (48 train, 12 test with 80/20 split)
 - **Features**: Average GPA (col 3), Prereq Taken (col 4), Pre-test Score (col 5)
 - **Preprocessing**:
   - Imputation: Median for continuous (GPA, PreTest), mode for categorical (Prereq)
@@ -103,7 +110,14 @@ The k-NN implementation uses:
 - **Training**: 80/20 random train-test split, 5 runs per k value
 - **Evaluation**: Error rate on both train and test sets
 
-Typical results show k=2 balances bias-variance (12% train error, 15% test error), while k=4 overfits (8% train, 23% test).
+### Model Selection and Bias-Variance Tradeoff
+
+Use `cmd/plot_knn` to visualize training vs test error across k values:
+- **Low k (2-4)**: Low training error but high test error → overfitting
+- **Optimal k (4-8)**: Best balance, following √N ≈ 7 rule for N=48 training samples
+- **High k (>10)**: Both errors increase → underfitting (averaging over >20% of training data)
+
+The plot shows the classic U-shaped test error curve demonstrating the bias-variance tradeoff. For this dataset, k=4 to k=8 typically yields the best generalization.
 
 ## Data Notes
 - The `.m` file uses bracketed rows for `X` and a column vector for `Y`, with commas/spaces allowed.
